@@ -1,9 +1,9 @@
 from django.apps import AppConfig
 
 
-class UsersConfig(AppConfig):
+class ApiConfig(AppConfig):
     """
-    Конфигурация приложения Users.
+    Конфигурация приложения API.
     """
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'users'
+    name = 'api'
