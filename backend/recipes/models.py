@@ -92,7 +92,7 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,
         blank=False,
-        verbose_name='Тэги',
+        verbose_name='Теги',
     )
     image = models.ImageField(
         blank=False,
@@ -130,7 +130,7 @@ class Recipe(models.Model):
         ).count()
         return favorite_count
     get_favorite_count.short_description = (
-        'Количество добавлений в избранные рецепты'
+        'Количество добавлений в избранные рецепты.'
     )
 
     class Meta:
@@ -166,11 +166,11 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE,
         blank=False,
         null=False,
-        verbose_name='Ингредиент в рецепте',
+        verbose_name='Ингредиент в рецепте.',
     )
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество ингредиента в рецепте',
-     )
+    )
 
     class Meta:
         constraints = [
