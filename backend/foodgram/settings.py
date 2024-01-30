@@ -12,11 +12,12 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'backend',
-    '158.160.7.192',
-    'foodgram-project.bounceme.net',
-    'localhost'
+    '127.0.0.1',                        # Станислав, привет! У меня перед отправкой диплома сломался сервер Яндекса.
+    'backend',                          # Пока они его чинят, я повесил диплом на свой сервер '80.78.243.116'.
+    '80.78.243.116',                    # Яндекс разрешает так делать. Пока проект будет на проверке, я перенастрою домен и SSL на свой сервер.
+    '158.160.7.192',                    # Просто для информации, зачем лишний айпишник и почему не работает домен. 
+    'foodgram-project.bounceme.net',    # По заданию мы можем вешать диплом просто на IP. )
+    'localhost',
 ]
 
 INSTALLED_APPS = [
@@ -115,11 +116,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR / 'static/')
+STATIC_ROOT = os.path.join(BASE_DIR / 'collected_static')
 
 MEDIA_URL = '/media/'
 
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

@@ -10,7 +10,7 @@ def username_validator(username):
 
     Возвращает:
     bool: True, если имя пользователя соответствует шаблону
-    и не равно 'me', иначе False.
+    и не равно 'me'.
     """
     pattern = r'^[\w.@+-]+$'
     if re.match(pattern, username) and username != 'me':
