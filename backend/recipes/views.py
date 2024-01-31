@@ -1,8 +1,12 @@
+from django.conf import settings
+from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
+from http import HTTPStatus
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
+from django.db.models import Sum, F
 
 from recipes.filters import RecipesFilter, IngredientsFilter
 from recipes.models import (Ingredient,
@@ -23,8 +27,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """
     Класс представления для модели Recipe.
     """
-    queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    CONTENT_TYPE = 'text/plain'
     permission_classes = (
         IsAuthenticatedOrReadOnly,
         AuthorOrAdminCanEditPermission,
@@ -36,7 +39,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Возвращает отсортированный по дате публикации queryset рецептов.
         """
         queryset = super().get_queryset()
-        queryset = queryset.order_by('-pub_date')
         return queryset
 
     def get_serializer_class(self):
@@ -52,7 +54,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Создает или удаляет объект модели FavoriteRecipe или ShoppingCart
         в зависимости от метода запроса.
         """
-        recipe = Recipe.objects.get(id=pk)
+        recipe = get_object_or_404(Recipe, id=pk)
         user = request.user
         objects_exists = model.objects.filter(
             user=user,
@@ -64,7 +66,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if objects_exists:
                 return Response(
                     {'errors': 'Данный рецепт уже добавлен'},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=HTTPStatus.BAD_REQUEST
                 )
 
             model.objects.create(
@@ -74,7 +76,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer = SubscribeFavoriteRecipeSerializer(recipe)
             return Response(
                 serializer.data,
-                status=status.HTTP_201_CREATED
+                status=HTTPStatus.CREATED
             )
 
         else:
@@ -82,14 +84,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if not objects_exists:
                 return Response(
                     {'errors': 'Данного рецепта нет в списке'},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=HTTPStatus.BAD_REQUEST
                 )
 
             model.objects.filter(
                 user=user,
                 recipe=recipe
             ).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(status=HTTPStatus.NO_CONTENT)
 
     @action(
         detail=True,
@@ -109,15 +111,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Возвращает список избранных рецептов пользователя.
         """
         user = request.user
-        favorites = FavoriteRecipe.objects.filter(
-            user=user
-        )
+        favorites = user.user_favorite_recipes.all()
         serializer = FavoriteSerializer(
             favorites,
             many=True
         )
         return Response(
-            serializer.data, status=status.HTTP_200_OK
+            serializer.data, status=HTTPStatus.OK
         )
 
     @action(
@@ -149,41 +149,28 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         ingredients = RecipeIngredient.objects.filter(
             recipe_id__in=recipe_ids
-        )
-        ingredients_result = []
-
-        for ingredient in ingredients:
-            name = ingredient.ingredient.name
-            amount = ingredient.amount
-            measurement_unit = ingredient.ingredient.measurement_unit
-
-            flag = False
-            for item in ingredients_result:
-                if name == item[0]:
-                    item[1] += amount
-                    flag = True
-                    break
-
-            if not flag:
-                ingredients_result.append(
-                    [
-                        name,
-                        amount,
-                        measurement_unit
-                    ]
-                )
+        ).values(
+            name=F('ingredient__name'), 
+            measurement_unit=F('ingredient__measurement_unit')
+        ).annotate(total_amount=Sum('amount'))
 
         shopping_cart = 'Список покупок:\n'
-        for item in ingredients_result:
+        for item in ingredients:
             shopping_cart += (
-                f'Наименование: {item[0]}, Количество: {item[1]} {item[2]}\n'
+                f'Наименование: {item["name"]}, '
+                f'Количество: {item["total_amount"]} '
+                f'{item["measurement_unit"]}\n'
             )
-        response = HttpResponse(shopping_cart, content_type='text/plain')
-        response['Content-Disposition'] = (
-            'attachment;'
-            'filename=shopping_cart.txt'
+        response = HttpResponse(
+            shopping_cart, content_type=self.CONTENT_TYPE
+        )
+        response['Content-Disposition'] =(
+            f'attachment; filename={settings.SHOPPING_CART_FILENAME}'
         )
         return response
+
+    class Meta:
+        ordering = ['-pub_date']
 
 
 class IngredientsViewSet(viewsets.ModelViewSet):

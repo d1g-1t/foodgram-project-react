@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from http import HTTPStatus
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -20,11 +21,11 @@ class CustomUserViewSet(UserViewSet):
     """
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = [CreateOrAuthenticatedUserPermission]
+    permission_classes = (CreateOrAuthenticatedUserPermission,)
 
     @action(
         detail=True,
-        methods=['post', 'delete'],
+        methods=('post', 'delete'),
         permission_classes=(IsAuthenticated,)
     )
     def subscribe(self, request, id):
@@ -39,12 +40,12 @@ class CustomUserViewSet(UserViewSet):
             if subscribe_existence:
                 return Response(
                     {'errors': 'Данная подписка уже существует'},
-                    status=400
+                    status=HTTPStatus.BAD_REQUEST
                 )
             if subscriber == target_user:
                 return Response(
                     {'errors': 'Нельзя подписаться на самого себя'},
-                    status=400
+                    status=HTTPStatus.BAD_REQUEST
                 )
             subscription = SubscribeUser(
                 subscriber=subscriber,
@@ -58,23 +59,23 @@ class CustomUserViewSet(UserViewSet):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data, status=201)
+            return Response(serializer.data, status=HTTPStatus.CREATED)
 
         if not subscribe_existence:
             return Response(
                 {'errors': 'Данной подписки не существует'},
-                status=400
+                status=HTTPStatus.BAD_REQUEST
             )
         subscription = SubscribeUser.objects.get(
             subscriber=subscriber,
             target_user=target_user
         )
         subscription.delete()
-        return Response(status=204)
+        return Response(status=HTTPStatus.NO_CONTENT)
 
     @action(
         detail=False,
-        methods=['get'],
+        methods=('get',),
         permission_classes=(IsAuthenticated,),
     )
     def subscriptions(self, request):

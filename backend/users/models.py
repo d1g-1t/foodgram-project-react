@@ -17,11 +17,11 @@ class User(AbstractUser):
     """
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = [
+    REQUIRED_FIELDS = (
         'username',
         'first_name',
         'last_name'
-    ]
+    )
     email = models.EmailField(
         max_length=254,
         blank=False,
@@ -67,12 +67,12 @@ class User(AbstractUser):
         ordering = ('username',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['username', 'email'],
+                fields=('username', 'email'),
                 name='unique_user',
-            )
-        ]
+            ),
+        )
 
     def __str__(self):
         return self.username
@@ -98,15 +98,15 @@ class SubscribeUser(models.Model):
     )
 
     class Meta:
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=[
+                fields=(
                     'subscriber',
                     'target_user'
-                ],
+                ),
                 name='unique_user_subscribe'
-            )
-        ]
+            ),
+        )
 
     def __str__(self):
         return (

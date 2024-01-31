@@ -32,10 +32,10 @@ class RecipeIngredientInline(admin.TabularInline):
     model = RecipeIngredient
     extra = 1
     verbose_name_plural = 'Ингредиенты'
-    fields = [
+    fields = (
         'ingredient',
         'amount'
-    ]
+    )
 
 
 class RecipeForm(forms.ModelForm):
@@ -86,14 +86,13 @@ class RecipeAdmin(admin.ModelAdmin):
     form = RecipeForm
 
     def display_tags(self, obj):
-        return ", ".join(
+        return ', '.join(
             tag['name'] for tag in obj.tags.values()
         )
     display_tags.short_description = 'Теги'
 
     def get_favorite_count(self, obj):
-        favorite = FavoriteRecipe.objects.filter(recipe=obj)
-        return favorite.count()
+        return obj.favorite_recipes.count()
     get_favorite_count.short_description = (
         'Количество добавлений рецепта в избранное'
     )

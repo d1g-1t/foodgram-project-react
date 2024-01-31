@@ -82,22 +82,17 @@ class SubscribeSerializer(CustomUserSerializer):
         read_only=True
     )
 
-    def get_user_recipes(self, obj):
+    def get_user_favorite_recipes(self, obj):
         """
-        Функция для получения рецептов пользователя.
+        Функция для получения избранных рецептов пользователя.
         """
-        return Recipe.objects.filter(
-            author=obj
-        )
+        return obj.user_favorite_recipes.all()
 
-    def get_recipes_count(self, obj):
+    def get_favorite_recipes_count(self, obj):
         """
-        Функция для получения количества рецептов пользователя.
+        Функция для получения количества избранных рецептов пользователя.
         """
-        recipes = Recipe.objects.filter(
-            author=obj.id
-        )
-        return recipes.count()
+        return obj.user_favorite_recipes.count()
 
     class Meta(CustomUserSerializer.Meta):
         fields = (

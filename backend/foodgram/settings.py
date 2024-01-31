@@ -7,18 +7,16 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = 'django-insecure-18!g22*-f8=at#q*w2d@=i34g&8-(o)d_*=u#ojyqw%01gfi%k'
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG_VALUE') == 'True'
 
-ALLOWED_HOSTS = [
-    '127.0.0.1',                        # Станислав, привет! У меня перед отправкой диплома сломался сервер Яндекса.
-    'backend',                          # Пока они его чинят, я повесил диплом на свой сервер '80.78.243.116'.
-    '80.78.243.116',                    # Яндекс разрешает так делать. Пока проект будет на проверке, я перенастрою домен и SSL на свой сервер.
-    '158.160.7.192',                    # Просто для информации, зачем лишний айпишник и почему не работает домен.
-    'foodgram-project.bounceme.net',    # По заданию мы можем вешать диплом просто на IP. )
-    'localhost',
-]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
+
+# Станислав, привет! В общем, сервер Яндекс восстановить не удалось, там только резервная копия от 29.12.23 г. нашлась.
+# Куратор сказала, что можно оставить проект на своем сервере и ничего страшного.   
+# Я обновил настройки для домена и SSL для своего IP. Все работает, хотя это требование вроде факультативное.
+# Если для проверки проекта нужен доступ к серверу, то напиши, пожалуйста, в Пачке, я дам пароль. Там чистый сервер, только Foodgram. Спасибо.
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -154,3 +152,13 @@ DJOSER = {
         'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
     },
 }
+
+COOKING_TIME_MIN = 1
+
+COOKING_TIME_MAX = 300
+
+AMOUNT_MIN = 0
+
+AMOUNT_MAX = 100
+
+SHOPPING_CART_FILENAME = 'shopping_cart.txt'

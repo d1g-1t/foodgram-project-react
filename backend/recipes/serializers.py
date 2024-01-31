@@ -1,4 +1,5 @@
 from django.core.exceptions import PermissionDenied
+from django.conf import settings
 from django.db import transaction
 
 from rest_framework import serializers
@@ -59,7 +60,10 @@ class AddIngredientSerializer(serializers.ModelSerializer):
     Сериализатор для добавления ингредиентов в рецепт.
     """
     id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+    amount = serializers.IntegerField(
+        min_value=settings.AMOUNT_MIN,
+        max_value=settings.AMOUNT_MAX
+    )
 
     class Meta:
         model = RecipeIngredient
@@ -116,10 +120,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         if user.is_anonymous:
             return False
-        return FavoriteRecipe.objects.filter(
-            user=user,
-            recipe=obj,
-        ).exists()
+        return user.favorite_recipes.filter(recipe=obj).exists()
 
     def get_is_in_shopping_cart(self, obj):
         """
@@ -151,7 +152,8 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         read_only=True
     )
     cooking_time = serializers.IntegerField(
-        min_value=1
+        min_value=settings.COOKING_TIME_MIN,
+        max_value=settings.COOKING_TIME_MAX
     )
 
     class Meta:
@@ -174,34 +176,27 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         """
         author = self.context['request'].user
         name = data.get('name')
-        ingredients_list = []
+        ingredients_ids = [
+            ingredient['id'] for ingredient in data['ingredients']
+        ]
 
-        for index in range(len(data['ingredients'])):
-            amount = data['ingredients'][index]['amount']
+        if len(ingredients_ids) != len(set(ingredients_ids)):
+            raise serializers.ValidationError(
+                {'error': 'Ингредиенты не должны повторяться.'}
+            )
 
-            if amount < 1:
-                raise serializers.ValidationError(
-                    {'amount':
-                     'Значение должно быть больше 1.'}
+        if Recipe.objects.filter(
+            author=author, name=name
+        ).exists():
+            raise serializers.ValidationError(
+                {'error': 'Этот рецепт уже был добавлен.'}
+            )
+        for index, ingredient in enumerate(data['ingredients']):
+            if 'amount' not in ingredient:
+                error_msg = (
+                    f'Не указано количество для ингредиента с индексом {index}.'
                 )
-
-            if data['ingredients'][index]['id'] in ingredients_list:
-                raise serializers.ValidationError(
-                    {'error': 'Этот ингредиент уже был добавлен.'}
-                )
-            ingredients_list.append(data['ingredients'][index]['id'])
-
-        if self.instance is not None:
-            if self.instance.author != author:
-                raise PermissionDenied
-        else:
-            if Recipe.objects.filter(
-                author=author, name=name
-            ).exists():
-                raise serializers.ValidationError(
-                    {'error':
-                     'Этот рецепт уже был добавлен.'}
-                )
+                raise serializers.ValidationError({'error': error_msg})
 
         return data
 
@@ -209,14 +204,14 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         """
         Создает или обновляет связанные модели RecipeIngredient и TagRecipe.
         """
-        ingredient_amount = [
+        ingredient_amount = (
             RecipeIngredient(
                 recipe=recipe,
                 ingredient_id=ingredient['id'],
                 amount=ingredient['amount']
             )
             for ingredient in ingredients
-        ]
+        )
         RecipeIngredient.objects.bulk_create(ingredient_amount)
 
         for tag in tags:

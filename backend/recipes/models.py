@@ -1,7 +1,9 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
+from colorfield.fields import ColorField
 
 from users.models import User
-from users.validators import color_validator
 
 
 class Ingredient(models.Model):
@@ -44,12 +46,7 @@ class Tag(models.Model):
         null=False,
         verbose_name='Название тега',
     )
-    color = models.CharField(
-        max_length=7,
-        validators=[color_validator],
-        blank=False,
-        null=False,
-    )
+    color = ColorField()
     slug = models.SlugField(
         max_length=200,
         blank=False,
@@ -112,6 +109,10 @@ class Recipe(models.Model):
         verbose_name='Рецепт приготовления',
     )
     cooking_time = models.PositiveSmallIntegerField(
+        validators=(
+            MinValueValidator(settings.COOKING_TIME_MIN),
+            MaxValueValidator(settings.COOKING_TIME_MAX)
+        ),
         blank=False,
         null=False,
         verbose_name='Время приготовления блюда (мин.)',
@@ -125,21 +126,20 @@ class Recipe(models.Model):
         """
         Получение количества добавлений в избранные рецепты.
         """
-        favorite_count = FavoriteRecipe.objects.filter(
-            recipe=self
-        ).count()
+        favorite_count = self.favorite_recipes.count()
         return favorite_count
+
     get_favorite_count.short_description = (
         'Количество добавлений в избранные рецепты.'
     )
 
     class Meta:
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['author', 'name'],
+                fields=('author', 'name'),
                 name='unique_author_recipe'
-            )
-        ]
+            ),
+        )
 
     def __str__(self):
         return self.name
@@ -169,16 +169,20 @@ class RecipeIngredient(models.Model):
         verbose_name='Ингредиент в рецепте.',
     )
     amount = models.PositiveSmallIntegerField(
+        validators=(
+            MinValueValidator(settings.AMOUNT_MIN),
+            MaxValueValidator(settings.AMOUNT_MAX)
+        ),
         verbose_name='Количество ингредиента в рецепте',
     )
 
     class Meta:
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['ingredient', 'recipe'],
+                fields=('ingredient', 'recipe'),
                 name='unique_ingredient_amount'
-            )
-        ]
+            ),
+        )
 
     def __str__(self):
         return (
@@ -198,21 +202,23 @@ class FavoriteRecipe(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        related_name='user_favorite_recipes',
         verbose_name='Пользователь',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        related_name='favorite_recipes',
         verbose_name='Рецепт',
     )
 
     class Meta:
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['user', 'recipe'],
+                fields=('user', 'recipe'),
                 name='unique_user_recipe_favorite'
-            )
-        ]
+            ),
+        )
 
     def __str__(self):
         return (
@@ -241,12 +247,12 @@ class TagRecipe(models.Model):
     )
 
     class Meta:
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['tag', 'recipe'],
+                fields=('tag', 'recipe'),
                 name='unique_tag_recipe'
-            )
-        ]
+            ),
+        )
 
     def __str__(self):
         return f'Тег "{self.tag}" применен к рецепту "{self.recipe}"'
@@ -263,6 +269,7 @@ class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        related_name='user_shopping_cart',
     )
     recipe = models.ForeignKey(
         Recipe,
@@ -270,12 +277,12 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['user', 'recipe'],
+                fields=('user', 'recipe'),
                 name='unique_user_recipe_shopping_cart'
-            )
-        ]
+            ),
+        )
 
     def __str__(self):
         return (

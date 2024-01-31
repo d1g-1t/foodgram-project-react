@@ -18,6 +18,6 @@ class CreateOrAuthenticatedUserPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if view.action == 'create':
             return True
-        if view.action == 'me':
-            return request.user.is_authenticated
-        return request.method in permissions.SAFE_METHODS
+        is_authenticated = request.user.is_authenticated
+        is_safe_method = request.method in permissions.SAFE_METHODS
+        return is_authenticated or is_safe_method
