@@ -2,6 +2,7 @@ import re
 
 USERNAME_PATTERN = r'^[\w.@+-]+$'
 
+
 def username_validator(username):
     """
     Проверяет, соответствует ли заданное имя пользователя указанному шаблону.

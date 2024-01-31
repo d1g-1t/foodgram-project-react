@@ -2,7 +2,7 @@ from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from http import HTTPStatus
-from rest_framework import status, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -150,7 +150,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ingredients = RecipeIngredient.objects.filter(
             recipe_id__in=recipe_ids
         ).values(
-            name=F('ingredient__name'), 
+            name=F('ingredient__name'),
             measurement_unit=F('ingredient__measurement_unit')
         ).annotate(total_amount=Sum('amount'))
 
@@ -164,9 +164,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response = HttpResponse(
             shopping_cart, content_type=self.CONTENT_TYPE
         )
-        response['Content-Disposition'] =(
+        response['Content-Disposition'] = (
             f'attachment; filename={settings.SHOPPING_CART_FILENAME}'
         )
+
         return response
 
     class Meta:

@@ -1,4 +1,3 @@
-from django.core.exceptions import PermissionDenied
 from django.conf import settings
 from django.db import transaction
 
@@ -194,7 +193,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         for index, ingredient in enumerate(data['ingredients']):
             if 'amount' not in ingredient:
                 error_msg = (
-                    f'Не указано количество для ингредиента с индексом {index}.'
+                    f'Не указано количество для ингредиента {index}.'
                 )
                 raise serializers.ValidationError({'error': error_msg})
 
