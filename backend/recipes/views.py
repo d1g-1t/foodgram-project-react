@@ -22,12 +22,13 @@ from recipes.serializers import (RecipeSerializer,
 from users.permissions import AuthorOrAdminCanEditPermission
 from users.serializers import SubscribeFavoriteRecipeSerializer
 
+TEXT_PLAIN_CONTENT_TYPE = 'text/plain'
+
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """
     Класс представления для модели Recipe.
     """
-    CONTENT_TYPE = 'text/plain'
     permission_classes = (
         IsAuthenticatedOrReadOnly,
         AuthorOrAdminCanEditPermission,
@@ -39,7 +40,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Возвращает отсортированный по дате публикации queryset рецептов.
         """
         queryset = super().get_queryset()
-        return queryset
+        return queryset.order_by('-pub_date')
 
     def get_serializer_class(self):
         """
@@ -162,16 +163,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 f'{item["measurement_unit"]}\n'
             )
         response = HttpResponse(
-            shopping_cart, content_type=self.CONTENT_TYPE
+            shopping_cart, content_type=self.TEXT_PLAIN_CONTENT_TYPE
         )
         response['Content-Disposition'] = (
             f'attachment; filename={settings.SHOPPING_CART_FILENAME}'
         )
 
         return response
-
-    class Meta:
-        ordering = ['-pub_date']
 
 
 class IngredientsViewSet(viewsets.ModelViewSet):

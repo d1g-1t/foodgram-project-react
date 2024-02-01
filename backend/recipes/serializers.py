@@ -61,8 +61,18 @@ class AddIngredientSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     amount = serializers.IntegerField(
         min_value=settings.AMOUNT_MIN,
-        max_value=settings.AMOUNT_MAX
-    )
+        max_value=settings.AMOUNT_MAX,
+        error_messages={
+            'min_value': (
+                'Количество ингредиентов не должно быть меньше {}'
+                .format(settings.AMOUNT_MIN)
+            ),
+            'max_value': (
+                'Количество ингредиентов не должно быть больше {}'
+                .format(settings.AMOUNT_MAX)
+            ),
+        }
+)
 
     class Meta:
         model = RecipeIngredient
@@ -150,10 +160,17 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(
         read_only=True
     )
-    cooking_time = serializers.IntegerField(
-        min_value=settings.COOKING_TIME_MIN,
-        max_value=settings.COOKING_TIME_MAX
-    )
+    cooking_time = serializers.IntegerField()
+
+    def validate_cooking_time(self, value):
+        min_time = settings.COOKING_TIME_MIN
+        max_time = settings.COOKING_TIME_MAX
+        if value < min_time or value > max_time:
+            raise serializers.ValidationError(
+                f'Время приготовления должно быть между {min_time} и '
+                f'{max_time} минутами'
+            )
+        return value
 
     class Meta:
         model = Recipe
