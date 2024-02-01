@@ -72,7 +72,7 @@ class AddIngredientSerializer(serializers.ModelSerializer):
                 .format(settings.AMOUNT_MAX)
             ),
         }
-)
+    )
 
     class Meta:
         model = RecipeIngredient
