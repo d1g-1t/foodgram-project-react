@@ -39,7 +39,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """
         Возвращает отсортированный по дате публикации queryset рецептов.
         """
-        queryset = super().get_queryset()
+        queryset = Recipe.objects.all()
         return queryset.order_by('-pub_date')
 
     def get_serializer_class(self):
