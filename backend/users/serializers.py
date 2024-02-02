@@ -78,15 +78,9 @@ class SubscribeSerializer(CustomUserSerializer):
     recipes_count = SerializerMethodField()
     recipes = SubscribeFavoriteRecipeSerializer(
         many=True,
-        source='get_user_recipes',
+        source='recipes',
         read_only=True
     )
-
-    def get_user_recipes(self, obj):
-        """
-        Функция для получения рецептов пользователя.
-        """
-        return obj.recipes.all()
 
     def get_recipes_count(self, obj):
         """
@@ -102,7 +96,6 @@ class SubscribeSerializer(CustomUserSerializer):
             CustomUserSerializer.Meta.fields
             + ('recipes', 'recipes_count',)
         )
-
         read_only_fields = (
             'email',
             'username',

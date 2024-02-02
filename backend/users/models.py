@@ -108,6 +108,7 @@ class SubscribeUser(models.Model):
     )
 
     class Meta:
+        ordering = ['id']
         constraints = (
             models.UniqueConstraint(
                 fields=(

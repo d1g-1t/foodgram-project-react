@@ -277,6 +277,7 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
+        ordering = ['id',]
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'recipe'),
