@@ -62,6 +62,16 @@ class User(AbstractUser):
         related_name="%(app_label)s_%(class)s_related",
         related_query_name="%(app_label)s_%(class)ss",
     )
+    favorite_recipes = models.ManyToManyField(
+        'recipes.Recipe',
+        through='recipes.FavoriteRecipe',
+        related_name='favorited_by'
+    )
+    shopping_cart_recipes = models.ManyToManyField(
+        'recipes.Recipe',
+        through='recipes.ShoppingCart',
+        related_name='in_shopping_cart_of_users'
+    )
 
     class Meta:
         ordering = ('username',)
