@@ -40,7 +40,7 @@ class RecipesFilter(FilterSet):
         Фильтрует рецепты, которые пользователь добавил в избранное.
         """
         if value and self.request.user.is_authenticated:
-            return self.request.user.user_favorite_recipes.all()
+            return self.request.user.favorite_recipes.all()
         return queryset
 
     def filter_is_in_shopping_cart(self, queryset, name, value):

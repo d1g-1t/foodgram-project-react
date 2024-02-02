@@ -78,7 +78,6 @@ class SubscribeSerializer(CustomUserSerializer):
     recipes_count = SerializerMethodField()
     recipes = SubscribeFavoriteRecipeSerializer(
         many=True,
-        source='recipes',
         read_only=True
     )
 
