@@ -201,7 +201,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                 {'error': 'Ингредиенты не должны повторяться.'}
             )
 
-        if Recipe.objects.filter(
+        if self.instance is None and Recipe.objects.filter(
             author=author, name=name
         ).exists():
             raise serializers.ValidationError(
@@ -216,24 +216,30 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
         return data
 
-    def recipe_create_or_update(self, ingredients, tags, recipe):
+    @transaction.atomic
+    def update(self, instance, validated_data):
         """
-        Создает или обновляет связанные модели RecipeIngredient и TagRecipe.
+        Обновляет существующий рецепт.
         """
-        ingredient_amount = (
-            RecipeIngredient(
-                recipe=recipe,
+        instance.tags.clear()
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+
+        for ingredient in ingredients:
+            RecipeIngredient.objects.update_or_create(
+                recipe=instance,
                 ingredient_id=ingredient['id'],
-                amount=ingredient['amount']
+                defaults={'amount': ingredient['amount']}
             )
-            for ingredient in ingredients
-        )
-        RecipeIngredient.objects.bulk_create(ingredient_amount)
 
         for tag in tags:
-            TagRecipe.objects.create(recipe=recipe, tag=tag)
+            TagRecipe.objects.update_or_create(
+                recipe=instance,
+                tag=tag
+            )
+        instance.tags.set(tags)
 
-        recipe.tags.set(tags)
+        return super().update(instance, validated_data)
 
     @transaction.atomic
     def create(self, validated_data):
@@ -255,30 +261,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         )
         return recipe
 
-    @transaction.atomic
-    def update(self, instance, validated_data):
-        """
-        Обновляет существующий рецепт.
-        """
-        instance.tags.clear()
-        TagRecipe.objects.filter(
-            recipe=instance
-        ).delete()
-        RecipeIngredient.objects.filter(
-            recipe=instance
-        ).delete()
-        ingredients = validated_data.pop(
-            'ingredients'
-        )
-        tags = validated_data.pop('tags')
-
-        self.recipe_create_or_update(
-            ingredients,
-            tags,
-            instance
-        )
-        return super().update(instance, validated_data)
-
     def to_representation(self, instance):
         """
         Возвращает сериализованные данные рецепта.
@@ -296,6 +278,21 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FavoriteRecipe
+        fields = (
+            'id',
+            'user',
+            'recipe',
+        )
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели ShoppingCart.
+    """
+    recipe = RecipeSerializer(read_only=True)
+
+    class Meta:
+        model = ShoppingCart
         fields = (
             'id',
             'user',
