@@ -163,7 +163,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 f'{item["measurement_unit"]}\n'
             )
         response = HttpResponse(
-            shopping_cart, content_type=self.TEXT_PLAIN_CONTENT_TYPE
+            shopping_cart, content_type=TEXT_PLAIN_CONTENT_TYPE
         )
         response['Content-Disposition'] = (
             f'attachment; filename={settings.SHOPPING_CART_FILENAME}'
