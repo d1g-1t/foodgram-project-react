@@ -172,6 +172,24 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def recipe_create_or_update(self, ingredients, tags, recipe):
+        """
+        Создает или обновляет рецепт.
+        """
+        for ingredient in ingredients:
+            RecipeIngredient.objects.update_or_create(
+                recipe=recipe,
+                ingredient_id=ingredient['id'],
+                defaults={'amount': ingredient['amount']}
+            )
+
+        for tag in tags:
+            TagRecipe.objects.update_or_create(
+                recipe=recipe,
+                tag=tag
+            )
+        recipe.tags.set(tags)
+
     class Meta:
         model = Recipe
         fields = (
