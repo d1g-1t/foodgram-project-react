@@ -3,6 +3,7 @@ version: '3'
 volumes:
   pg_data:
   static:
+  static_backend:
   media:
 
 services:
@@ -20,7 +21,7 @@ services:
     depends_on:
       - db
     volumes:
-      - static:/backend_static
+      - static_backend:/app/collected_static
       - media:/app/media
 
   frontend:
@@ -40,6 +41,7 @@ services:
       - frontend
     volumes:
       - static:/staticfiles/
+      - static_backend:/staticfiles/
       - media:/media
     ports:
       - 8000:80
