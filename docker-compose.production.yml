@@ -23,6 +23,7 @@ services:
     volumes:
       - static_backend:/app/collected_static
       - media:/app/media
+      - /home/foodgram/api/docs:/app/api/docs
 
   frontend:
     image: d1g1tsdocker/foodgram_frontend:latest
@@ -41,7 +42,8 @@ services:
       - frontend
     volumes:
       - static:/staticfiles/
-      - static_backend:/staticfiles/
+      - static_backend:/collected_static
       - media:/media
+      - /home/foodgram/api/docs:/api/docs
     ports:
       - 8000:80
