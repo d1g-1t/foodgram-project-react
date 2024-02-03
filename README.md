@@ -76,4 +76,8 @@ docker exec -it <имя_контейнера_бекенда> python manage.py cr
 
 **API проекта будет доступно по локальному адресу: http://localhost/api/**
 
-**REDOC проекта будет доступен по локальному адресу: http://localhost/api/docs/**
+**Документация проекта будет доступен по локальному адресу: http://localhost/api/docs/redoc.html**
+
+**Проект доступен для теста по адресу: https://foodgram-project.bounceme.net**
+
+**Документация к API (примеры запросов, ответов и тд.) доступна по адресу: https://foodgram-project.bounceme.net/api/docs/redoc.html**
