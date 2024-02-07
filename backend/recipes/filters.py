@@ -48,7 +48,9 @@ class RecipesFilter(FilterSet):
         Фильтрует рецепты, которые пользователь добавил в корзину покупок.
         """
         if value and self.request.user.is_authenticated:
-            return self.request.user.user_shopping_cart.all()
+            user_shopping_cart = self.request.user.user_shopping_cart
+            recipe_ids = user_shopping_cart.values_list('recipe_id', flat=True)
+            return queryset.filter(id__in=recipe_ids)
         return queryset
 
     class Meta:
