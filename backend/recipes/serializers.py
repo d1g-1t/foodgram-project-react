@@ -224,7 +224,9 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         author = self.context['request'].user
         name = data.get('name')
         ingredients_ids = [
-            ingredient['id'] for ingredient in data['ingredients']
+            ingredient['id'] 
+            for ingredient 
+            in data['ingredients']
         ]
 
         if len(ingredients_ids) != len(set(ingredients_ids)):
@@ -233,7 +235,8 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             )
 
         if self.instance is None and Recipe.objects.filter(
-            author=author, name=name
+            author=author,
+            name=name
         ).exists():
             raise serializers.ValidationError(
                 {'error': 'Этот рецепт уже был добавлен.'}
