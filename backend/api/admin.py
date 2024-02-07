@@ -77,10 +77,13 @@ class RecipeAdmin(admin.ModelAdmin):
         'author',
         'display_tags'
     )
+    list_filter = (
+        'tags',
+    )
     search_fields = (
         'name',
         'author__username',
-        'tags__name'
+        'author__email'
     )
     readonly_fields = ('get_favorite_count',)
     form = RecipeForm
@@ -106,6 +109,9 @@ class IngredientAdmin(admin.ModelAdmin):
         'name',
         'measurement_unit',
     )
+    list_filter = (
+        'measurement_unit',
+    )
     search_fields = ('name',)
 
 
@@ -118,12 +124,12 @@ class FavoriteRecipeAdmin(admin.ModelAdmin):
         'recipe'
     )
     list_filter = (
-        'user',
-        'recipe'
+        'recipe__tags',
     )
     search_fields = (
-        'user',
-        'recipe'
+        'user__username',
+        'user__email',
+        'recipe__name'
     )
 
 
@@ -136,10 +142,13 @@ class ShoppingCartAdmin(admin.ModelAdmin):
         'user'
     )
     list_filter = (
-        'recipe',
-        'user'
+        'recipe__tags',
     )
-    search_fields = ('user',)
+    search_fields = (
+        'recipe__name',
+        'user__username',
+        'user__email'
+    )
 
 
 admin.site.register(User, CustomUserAdmin)
