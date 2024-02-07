@@ -224,8 +224,8 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         author = self.context['request'].user
         name = data.get('name')
         ingredients_ids = [
-            ingredient['id'] 
-            for ingredient 
+            ingredient['id']
+            for ingredient
             in data['ingredients']
         ]
 
